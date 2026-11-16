@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>重复入网地区问题交互优化</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--line:#e5e7eb;--text:#1f2329;--sub:#6b7280;--blue:#1890ff;--red:#e5484d;--orange:#fff1e0;--orange-line:#f5a623}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+.proto-ver{padding:10px 24px;background:#fff;border-bottom:1px solid var(--line);font-size:13px;color:var(--sub)}
+.wrap{max-width:1180px;margin:0 auto;padding:16px 24px 60px}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line)}
+.tab{padding:8px 14px;border:1px solid var(--line);border-bottom:none;border-radius:8px 8px 0 0;background:#fff;color:var(--blue);font-size:14px}
+.state{display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-top:none;padding:10px 14px;font-size:13px}
+.state .grp{display:flex;align-items:center;gap:6px}
+.state .grp b{font-weight:500;color:var(--sub)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:none;background:#fff;padding:3px 10px;font-size:12px;cursor:pointer;color:var(--text)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--blue);color:#fff}
+.reset{margin-left:auto;border:1px solid var(--line);background:#fff;border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+.chip{border:1px solid var(--line);background:#fff;border-radius:14px;padding:3px 12px;font-size:12px;cursor:pointer;color:var(--sub)}
+.chip.on{border-color:var(--blue);color:var(--blue)}
+.main{display:flex;gap:24px;align-items:flex-start;margin-top:14px;flex-wrap:wrap}
+
+/* 手机：底部按钮、Toast 以外框为定位基准，滚动区不设定位 */
+.phone{width:340px;height:680px;border:1px solid #d0d4da;border-radius:28px;background:#f7f8fa;overflow:hidden;position:relative;flex:none;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.nav{height:56px;background:#efeff1;border-bottom:1px solid #e3e3e6;display:flex;align-items:center;justify-content:space-between;padding:0 14px}
+.nav .ic{width:28px;font-size:18px;cursor:pointer;user-select:none}
+.nav .ic.r{text-align:right;cursor:default}
+.nav b{font-weight:600;font-size:15px;text-align:center;line-height:1.2}
+.nav b small{display:block;font-weight:400;font-size:10px;color:#888}
+.scr{height:calc(100% - 56px - 78px - 40px);overflow-y:auto;padding:0 14px 12px}
+.scr.full{height:calc(100% - 56px - 40px)}
+.btnbar{position:absolute;left:0;right:0;bottom:40px;height:78px;padding:16px 14px;background:#f7f8fa}
+.btn{height:46px;border-radius:23px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer}
+.navbar{position:absolute;left:0;right:0;bottom:0;height:40px;border-top:1px solid #e3e3e6;background:#f2f2f4;display:flex;justify-content:center;gap:60px;align-items:center;color:#555;font-size:18px}
+.navbar span{cursor:pointer}
+.sec{display:flex;align-items:center;gap:8px;font-size:15px;margin:16px 4px 10px}
+.sec:before{content:"";width:3px;height:15px;background:var(--blue)}
+.card{background:#fff;border-radius:12px;padding:2px 14px}
+.cell{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #f0f0f0;font-size:14px;cursor:default}
+.cell:last-child{border-bottom:none}
+.cell.pick{cursor:pointer}
+.cell .v{color:#9aa0a6;text-align:right;max-width:190px}
+.cell .ph{color:#c0c4cc}
+.photo{height:120px;background:#f3f5f8;border-radius:8px;margin:12px 0 4px}
+.tip{background:#e6f1fb;color:#2b78c5;font-size:12px;padding:8px 10px;border-radius:4px;margin-bottom:10px}
+.tip.warn{background:#fff2f0;color:#d4380d}
+.seg2{display:flex;background:#eceef1;border-radius:10px;padding:3px;margin-top:12px}
+.seg2 div{flex:1;text-align:center;padding:7px 0;font-size:14px;color:#555;border-radius:8px}
+.seg2 div.on{background:#fff;color:var(--blue);font-weight:600}
+.mcard{background:#fff;border:1px solid #8cbcf0;border-radius:10px;padding:12px;margin-top:12px;font-size:13px;position:relative}
+.mcard .badge{position:absolute;right:0;top:0;background:#dceafc;color:#2b78c5;font-size:11px;padding:1px 8px;border-radius:0 10px 0 8px}
+.mcard .t{display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px}
+.mcard .p{border:1px solid #6aa7ea;color:#2b78c5;font-size:11px;padding:0 4px;border-radius:2px;font-weight:400}
+.mcard .s{background:#fff4e5;color:#d48806;font-size:11px;padding:0 4px;border-radius:2px;font-weight:400}
+.mcard .row{color:#555;margin-top:8px}
+.store{background:#eef5ff;border:1px solid #9cc4f5;border-radius:10px;padding:12px;font-size:13px;display:flex;gap:10px;margin-top:6px}
+.store .dot{width:16px;height:16px;border-radius:50%;background:var(--blue);flex:none;margin-top:2px}
+.store .muted{color:#9aa0a6}
+.store{cursor:pointer}
+.store.off{background:#fff;border-color:#e5e7eb}
+.store.off .dot{background:#fff;border:1px solid #c0c4cc}
+.placeholder{display:flex;align-items:center;justify-content:center;height:100%;color:#9aa0a6;font-size:14px;text-align:center;padding:24px}
+.toast{position:absolute;left:50%;top:46%;transform:translateX(-50%);background:rgba(0,0,0,.75);color:#fff;font-size:13px;padding:8px 14px;border-radius:6px;white-space:nowrap;display:none}
+.new{outline:2px dashed var(--red);outline-offset:2px}
+.chg{background:var(--orange)!important;box-shadow:0 0 0 1px var(--orange-line)}
+.btn.chg{background:var(--blue)!important;box-shadow:0 0 0 3px var(--orange-line)}
+
+.notes{flex:1;min-width:300px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;font-size:13px}
+.notes .legend{font-weight:600;color:var(--text);padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.notes .legend i{display:inline-block;width:12px;height:12px;vertical-align:-2px;margin:0 4px 0 12px}
+.notes .legend .n{border:2px dashed var(--red)}
+.notes .legend .c{background:var(--orange);border:1px solid var(--orange-line)}
+.notes .hint{color:var(--sub);font-size:12px;margin-bottom:12px}
+.notes h3{font-size:15px;margin:0 0 6px}
+.lab{display:inline-block;font-size:12px;padding:0 6px;border-radius:4px;margin-right:6px;font-weight:400;vertical-align:1px}
+.lab.add{background:#fff0f0;color:var(--red)}
+.lab.mod{background:var(--orange);color:#b46b00}
+.lab.same{background:#f0f0f0;color:#666}
+.notes .k{color:var(--sub);margin-top:10px}
+.notes ol{margin:4px 0 0;padding-left:20px}
+.notes .warnline{background:#fff4f4;border-left:3px solid var(--red);padding:6px 10px;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="proto-ver">重复入网地区问题交互优化　<span>V0.2</span>　更新 2026-11-16</div>
+<div class="wrap">
+  <div class="tabs"><div class="tab">立刷公众号 H5（4 个改动页面）</div></div>
+  <div class="state">
+    <div class="grp"><b>名下银联号</b><span class="seg" data-k="ums"><button data-v="1">1 个</button><button data-v="2">2 个</button></span></div>
+    <div class="grp"><b>地区校验</b><span class="seg" data-k="pass"><button data-v="0">不通过（禁入地区）</button><button data-v="1">通过</button></span></div>
+    <button class="reset" id="reset">重置</button>
+  </div>
+  <div class="chips" id="chips"></div>
+
+  <div class="main">
+    <div class="phone" id="phone">
+      <div class="nav"><span class="ic" id="close">✕</span><b id="title"></b><span class="ic r">···</span></div>
+      <div id="body"></div>
+      <div class="navbar"><span id="back">‹</span><span style="color:#bbb">›</span></div>
+      <div class="toast" id="toast"></div>
+    </div>
+    <div class="notes">
+      <div class="legend">图例<i class="n"></i>红色虚线框 = 新增<i class="c"></i>橙底 = 调整</div>
+      <div class="hint">文案、字段、按钮以左侧页面为准；右侧只写页面上看不出来的规则。</div>
+      <div id="note"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var S = {ums: '1', pass: '0'};
+var form = {region: '', addr: ''};
+var stack = [];
+var storeIdx = 0;
+var SAMPLE = {region: '四川省成都市武侯区', addr: '天府大道北段 1 号'};
+
+var PAGES = {
+  store: {title: '门店管理', chip: '门店管理', note: {
+    tag: 'mod', name: '门店管理',
+    what: '名下 1 个银联号、原门店在禁入地区：点【新增门店】被拦 → 进入「修改入网地址」页',
+    path: '立刷公众号 H5 首页【新增门店】→ 门店管理',
+    rules: ['拦截范围、改地址后怎么报备，看 TAPD 规则 1']}},
+  pick: {title: '选择门店', chip: '选择门店', note: {
+    tag: 'mod', name: '选择门店',
+    what: '所选门店在禁入地区：点【确认】被拦 → 进入「修改入网地址」页',
+    path: '门店管理【新增门店】→ 选择门店（名下已有 2 个银联号）',
+    rules: ['列表展示名下 2 个可选门店（名下大 POS 商户不展示）',
+      '改地址后怎么报备、新子商户挂到哪，看 TAPD 规则 1']}},
+  addr: {title: '修改入网地址', chip: '修改入网地址', note: {
+    tag: 'add', name: '修改入网地址',
+    what: '新增页面：被禁入地区拦截时，重新填写入网地址后继续入网',
+    path: '门店管理【新增门店】或 选择门店【确认】之后',
+    rules: ['地址修改沿用现有逻辑：只能地图选点，详细地址由选点反填，不能手动修改',
+      '新地址沿用现有定位／门店地址校验，不通过沿用现有提示',
+      '提示条分两种：名下 1 个银联号、2 个银联号（写明会一并修改所选门店的地址），文案都待定',
+      '进入本页前系统已按原门店信息复制出新子商户；新地址改到哪个子商户上、怎么报备，看 TAPD 规则 1']}},
+  confirm: {title: '入网信息确认', chip: '入网信息确认', note: {
+    tag: 'mod', name: '入网信息确认',
+    what: '展示入网结算卡 + 入网地址 → 从「修改入网地址」页进入时，只展示入网结算卡',
+    path: '修改入网地址【确认】之后',
+    rules: ['中途退出后从首页待办再进入时，是否展示入网地址（待确定）']}},
+  next: {title: '下一步', chip: '后续流程', note: {
+    tag: 'same', name: '后续流程',
+    what: '与原有逻辑相同',
+    path: '地区校验通过：原有流程；入网信息确认【确认继续】之后：名下 1 个银联号 → 门店认证，2 个 → 设备绑定',
+    rules: []}}
+};
+
+function cell(label, val, ph, pick, cls) {
+  return '<div class="cell' + (pick ? ' pick' : '') + (cls ? ' ' + cls : '') + '"' + (pick ? ' data-pick="' + pick + '"' : '') + '>' + label +
+    '<span class="v' + (val ? '' : ' ph') + '">' + (val || ph) + '</span></div>';
+}
+
+function render() {
+  var cur = stack[stack.length - 1];
+  var p = PAGES[cur], h = '';
+  document.getElementById('title').innerHTML = p.title + '<small>epass.jlpay.com</small>';
+  if (cur === 'store') {
+    h = '<div class="scr"><div class="seg2"><div class="on">立刷电签</div><div>支付宝碰一下</div></div>' +
+      '<div class="mcard"><span class="badge">当前</span><div class="t"><span class="p">微电签</span>示例机身号<span class="s">活跃</span></div>' +
+      '<div class="row">门店名称：示例门店</div><div class="row">注册时间：2024-10-08 12:21:05</div></div></div>' +
+      '<div class="btnbar"><div class="btn chg" data-go="fromStore">新增门店</div></div>';
+  } else if (cur === 'pick') {
+    h = '<div class="scr"><div class="sec">请选择您的入网门店</div>' +
+      ['示例门店一', '示例门店二'].map(function (n, i) {
+        return '<div class="store' + (i === storeIdx ? '' : ' off') + '" data-store="' + i + '"><div class="dot"></div><div>门店名称　' + n + '<br><span class="muted">行业类别　零售</span></div></div>';
+      }).join('') + '</div>' +
+      '<div class="btnbar"><div class="btn chg" data-go="fromPick">确认</div></div>';
+  } else if (cur === 'addr') {
+    h = '<div class="scr"><div class="sec">入网地址</div>' +
+      '<div class="tip warn">' + (S.ums === '2' ? '所选门店所在地区暂不支持新增门店，请修改入网地址，该门店的入网地址将一并修改' : '原门店所在地区暂不支持新增门店，请重新选择入网地址') + '</div>' +
+      '<div class="card">' + cell('入网地区', form.region, '请选择 ›', 'region') + cell('详细地址', form.addr, '选择入网地区后带出') + '</div></div>' +
+      '<div class="btnbar"><div class="btn" data-go="fromAddr">确认</div></div>';
+  } else if (cur === 'confirm') {
+    h = '<div class="scr"><div class="sec">入网结算卡</div>' +
+      '<div class="card"><div class="photo"></div>' + cell('开户名称', '*某') + cell('结算卡', '6222 **** **** 0001') + '</div>';
+    h += '</div><div class="btnbar"><div class="btn" data-go="next">确认继续</div></div>';
+  } else {
+    h = '<div class="scr full"><div class="placeholder">与原有逻辑相同，进入下一步操作</div></div>';
+  }
+  document.getElementById('body').innerHTML = h;
+  renderNote(cur);
+  renderChips(cur);
+}
+
+function renderNote(cur) {
+  var n = PAGES[cur].note;
+  var lab = {add: '新增', mod: '改动', same: '不改'}[n.tag];
+  var h = '<h3><span class="lab ' + n.tag + '">' + lab + '</span>' + n.name + '</h3>' +
+    '<div>' + n.what + '</div><div class="k">页面路径：' + n.path + '</div>';
+  if (n.rules.length) h += '<ol>' + n.rules.map(function (r) { return '<li>' + r + '</li>'; }).join('') + '</ol>';
+  if (n.warn) h += '<div class="warnline">' + n.warn + '</div>';
+  document.getElementById('note').innerHTML = h;
+}
+
+function renderChips(cur) {
+  document.getElementById('chips').innerHTML = ['store', 'pick', 'addr', 'confirm', 'next'].map(function (k, i) {
+    return '<span class="chip' + (k === cur ? ' on' : '') + '" data-jump="' + k + '">' + (i + 1) + '. ' + PAGES[k].chip + '</span>';
+  }).join('');
+}
+
+function toast(t) {
+  var el = document.getElementById('toast');
+  el.textContent = t; el.style.display = 'block';
+  clearTimeout(el._t); el._t = setTimeout(function () { el.style.display = 'none'; }, 1800);
+}
+
+function push(k) { stack.push(k); render(); }
+
+function go(action) {
+  if (action === 'fromStore') {
+    if (S.ums === '2') return push('pick');
+    return push(S.pass === '0' ? 'addr' : 'next');
+  }
+  if (action === 'fromPick') return push(S.pass === '0' ? 'addr' : 'next');
+  if (action === 'fromAddr') {
+    if (!form.region || !form.addr) return toast('（沿用现有提示）');
+    return push('confirm');
+  }
+  if (action === 'next') return push('next');
+}
+
+function jump(k) {
+  if (k === 'pick') S.ums = '2';
+  var head = S.ums === '2' ? ['store', 'pick'] : ['store'];
+  if (k === 'addr' || k === 'confirm') S.pass = '0';
+  var tail = S.pass === '0' ? ['addr', 'confirm', 'next'] : ['next'];
+  var full = head.concat(tail);
+  stack = k === 'store' ? ['store'] : full.slice(0, full.indexOf(k) + 1);
+  form = stack.indexOf('confirm') >= 0 ? {region: SAMPLE.region, addr: SAMPLE.addr} : {region: '', addr: ''};
+  syncSeg(); render();
+}
+
+function syncSeg() {
+  document.querySelectorAll('.seg').forEach(function (s) {
+    s.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', S[s.dataset.k] === b.dataset.v); });
+  });
+}
+
+function reset() { storeIdx = 0; form = {region: '', addr: ''}; stack = ['store']; syncSeg(); render(); }
+
+document.addEventListener('click', function (e) {
+  var t = e.target.closest('[data-go],[data-pick],[data-store],[data-jump],.seg button');
+  if (!t) return;
+  if (t.dataset.go) go(t.dataset.go);
+  else if (t.dataset.pick) { form = {region: SAMPLE.region, addr: SAMPLE.addr}; render(); }
+  else if (t.dataset.store) { storeIdx = +t.dataset.store; render(); }
+  else if (t.dataset.jump) jump(t.dataset.jump);
+  else { S[t.parentNode.dataset.k] = t.dataset.v; reset(); }
+});
+document.getElementById('back').onclick = function () { if (stack.length > 1) { stack.pop(); render(); } };
+document.getElementById('close').onclick = reset;
+document.getElementById('reset').onclick = function () { S = {ums: '1', pass: '0'}; reset(); };
+
+var hashMap = {'#h5-1': 'store', '#h5-2': 'pick', '#h5-3': 'addr', '#h5-4': 'confirm'};
+reset();
+if (hashMap[location.hash]) jump(hashMap[location.hash]);
+</script>
+</body>
+</html>
