@@ -87,7 +87,7 @@ body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-system
 </style>
 </head>
 <body>
-<div class="proto-ver">重复入网地区问题交互优化　V0.2 ｜ 2026/11/16</div>
+<div class="proto-ver">重复入网地区问题交互优化　V0.3 ｜ 2026/11/16</div>
 <div class="wrap">
   <div class="tabs"><div class="tab">立刷公众号 H5（4 个改动页面）</div></div>
   <div class="state">
@@ -260,6 +260,7 @@ document.getElementById('reset').onclick = function () { S = {ums: '1', pass: '0
 var hashMap = {'#h5-1': 'store', '#h5-2': 'pick', '#h5-3': 'addr', '#h5-4': 'confirm'};
 reset();
 if (hashMap[location.hash]) jump(hashMap[location.hash]);
+window.addEventListener('hashchange', function () { if (hashMap[location.hash]) jump(hashMap[location.hash]); });
 </script>
 </body>
 </html>
