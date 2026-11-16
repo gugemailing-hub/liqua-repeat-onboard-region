@@ -87,7 +87,7 @@ body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-system
 </style>
 </head>
 <body>
-<div class="proto-ver">重复入网地区问题交互优化　V0.3 ｜ 2026/11/16</div>
+<div class="proto-ver">重复入网地区问题交互优化　V0.4 ｜ 2026/11/16</div>
 <div class="wrap">
   <div class="tabs"><div class="tab">立刷公众号 H5（4 个改动页面）</div></div>
   <div class="state">
@@ -164,13 +164,13 @@ function render() {
     h = '<div class="scr"><div class="seg2"><div class="on">立刷电签</div><div>支付宝碰一下</div></div>' +
       '<div class="mcard"><span class="badge">当前</span><div class="t"><span class="p">微电签</span>示例机身号<span class="s">活跃</span></div>' +
       '<div class="row">门店名称：示例门店</div><div class="row">注册时间：2024-10-08 12:21:05</div></div></div>' +
-      '<div class="btnbar"><div class="btn chg" data-go="fromStore">新增门店</div></div>';
+      '<div class="btnbar"><div class="btn' + (S.pass === '0' ? ' chg' : '') + '" data-go="fromStore">新增门店</div></div>';
   } else if (cur === 'pick') {
     h = '<div class="scr"><div class="sec">请选择您的入网门店</div>' +
       ['示例门店一', '示例门店二'].map(function (n, i) {
         return '<div class="store' + (i === storeIdx ? '' : ' off') + '" data-store="' + i + '"><div class="dot"></div><div>门店名称　' + n + '<br><span class="muted">行业类别　零售</span></div></div>';
       }).join('') + '</div>' +
-      '<div class="btnbar"><div class="btn chg" data-go="fromPick">确认</div></div>';
+      '<div class="btnbar"><div class="btn' + (S.pass === '0' ? ' chg' : '') + '" data-go="fromPick">确认</div></div>';
   } else if (cur === 'addr') {
     h = '<div class="scr"><div class="sec">入网地址</div>' +
       '<div class="tip warn">' + (S.ums === '2' ? '所选门店所在地区暂不支持新增门店，请修改入网地址，该门店的入网地址将一并修改' : '原门店所在地区暂不支持新增门店，请重新选择入网地址') + '</div>' +
@@ -190,6 +190,9 @@ function render() {
 
 function renderNote(cur) {
   var n = PAGES[cur].note;
+  if (S.pass === '1' && (cur === 'store' || cur === 'pick')) {
+    n = {tag: 'same', name: n.name, what: '地区校验通过：与原有逻辑相同，本需求不改', path: n.path, rules: []};
+  }
   var lab = {add: '新增', mod: '改动', same: '不改'}[n.tag];
   var h = '<h3><span class="lab ' + n.tag + '">' + lab + '</span>' + n.name + '</h3>' +
     '<div>' + n.what + '</div><div class="k">页面路径：' + n.path + '</div>';
