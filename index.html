@@ -87,7 +87,7 @@ body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-system
 </style>
 </head>
 <body>
-<div class="proto-ver">重复入网地区问题交互优化　V0.4 ｜ 2026/11/16</div>
+<div class="proto-ver">重复入网地区问题交互优化　V0.5 ｜ 2026/11/17</div>
 <div class="wrap">
   <div class="tabs"><div class="tab">立刷公众号 H5（4 个改动页面）</div></div>
   <div class="state">
@@ -143,7 +143,7 @@ var PAGES = {
     tag: 'mod', name: '入网信息确认',
     what: '展示入网结算卡 + 入网地址 → 从「修改入网地址」页进入时，只展示入网结算卡',
     path: '修改入网地址【确认】之后',
-    rules: ['中途退出后从首页待办再进入时，是否展示入网地址（待确定）']}},
+    rules: ['中途退出后从首页待办再进入时，展示入网地址，内容为修改后的新地址']}},
   next: {title: '下一步', chip: '后续流程', note: {
     tag: 'same', name: '后续流程',
     what: '与原有逻辑相同',
