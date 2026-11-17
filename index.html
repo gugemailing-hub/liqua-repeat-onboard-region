@@ -87,7 +87,7 @@ body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-system
 </style>
 </head>
 <body>
-<div class="proto-ver">重复入网地区问题交互优化　V0.5 ｜ 2026/11/17</div>
+<div class="proto-ver">重复入网地区问题交互优化　V0.6 ｜ 2026/11/17</div>
 <div class="wrap">
   <div class="tabs"><div class="tab">立刷公众号 H5（4 个改动页面）</div></div>
   <div class="state">
@@ -137,7 +137,7 @@ var PAGES = {
     path: '门店管理【新增门店】或 选择门店【确认】之后',
     rules: ['地址修改沿用现有逻辑：只能地图选点，详细地址由选点反填，不能手动修改',
       '新地址沿用现有定位／门店地址校验，不通过沿用现有提示',
-      '提示条分两种：名下 1 个银联号、2 个银联号（写明会一并修改所选门店的地址），文案都待定',
+      '提示条按名下银联号分两种：1 个「原门店所在地区暂不支持新增门店，请重新选择入网地址」；2 个「所选门店所在地区暂不支持新增门店，请修改入网地址，该门店的入网地址将一并修改」',
       '进入本页前系统已按原门店信息复制出新子商户；新地址改到哪个子商户上、怎么报备，看 TAPD 规则 1']}},
   confirm: {title: '入网信息确认', chip: '入网信息确认', note: {
     tag: 'mod', name: '入网信息确认',
